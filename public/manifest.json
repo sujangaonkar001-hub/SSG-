@@ -1,13 +1,14 @@
 {
-  "name": "SSG Dark Tunnel",
+  "name": "SSG Dark Tunnel C2",
   "short_name": "SSG C2",
-  "start_url": "/dashboard",
+  "description": "Dark tunnel controller",
+  "start_url": "/",
   "display": "standalone",
-  "background_color": "#000",
-  "theme_color": "#0f0",
+  "background_color": "#000000",
+  "theme_color": "#00FF00",
   "icons": [{
-    "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgdmlld0JveD0iMCAwIDE5MiAxOTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CgogPGNpcmNsZSBjeD0iOTYiIGN5PSI5NiIgcj0iOTYiIGZpbGw9IiMwMEZGQDAiLz4KICA8cGF0aCBkPSJNOSAxMjRIMTgzVjE4NUg5VjEyNFoiIGZpbGw9IiNGRkYiLz4KPC9zdmc+",
+    "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAAArCAYAAAA9iOJeAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAALEgAACxIB0t1+/AAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLmlv44J0g9QAA...",
     "sizes": "192x192",
-    "type": "image/svg+xml"
+    "type": "image/png"
   }]
 }
