@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: ssg-dark-tunnel
+    env: node
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
